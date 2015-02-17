@@ -205,7 +205,8 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\PagedResult.cs" />
+    <Compile Include="Infrastructure\XHeaderValueProvider.cs" />
+    <Compile Include="Infrastructure\PagedResult.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

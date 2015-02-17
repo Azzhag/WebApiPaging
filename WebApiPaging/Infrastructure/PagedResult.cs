@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebApiPaging.Controllers
+namespace WebApiPaging.Infrastructure
 {
     public class PagedResult<T>
     {

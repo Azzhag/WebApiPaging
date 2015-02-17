@@ -1,7 +1,18 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Web.Http.Metadata;
+using System.Web.Http.ModelBinding;
+using System.Web.Http.Results;
+using System.Web.Http.ValueProviders;
+using System.Web.UI.WebControls;
+using WebApiPaging.Infrastructure;
 using WebApiPaging.Models;
 
 namespace WebApiPaging.Controllers
@@ -65,5 +76,38 @@ namespace WebApiPaging.Controllers
             // Return the list of customers
             return Ok(new PagedResult<Customer>(customers, pageNo, pageSize, total));
         }
+
+        [HttpGet]
+        [Route("customers/headers")]
+        public IHttpActionResult GetViaHeaders([ValueProvider(typeof(XHeaderValueProviderFactory))] int pageNo = 1, [ValueProvider(typeof(XHeaderValueProviderFactory))] int pageSize = 50)
+        {
+            // Determine the number of records to skip
+            int skip = (pageNo - 1) * pageSize;
+
+            // Get total number of records
+            int total = _dbContext.Customers.Count();
+
+            // Select the customers based on paging parameters
+            var customers = _dbContext.Customers
+                .OrderBy(c => c.Id)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToList();
+
+            // Determine page count
+            int pageCount = total > 0
+                ? (int) Math.Ceiling(total/(double) pageSize)
+                : 0;
+
+            // Set headers for paging
+            HttpContext.Current.Response.Headers.Add("X-Paging-PageNo", pageNo.ToString());
+            HttpContext.Current.Response.Headers.Add("X-Paging-PageSize", pageSize.ToString());
+            HttpContext.Current.Response.Headers.Add("X-Paging-PageCount", pageCount.ToString());
+            HttpContext.Current.Response.Headers.Add("X-Paging-TotalRecordCount", total.ToString());
+
+            // Return the list of customers
+            return Ok(customers);
+        }
     }
+
 }
