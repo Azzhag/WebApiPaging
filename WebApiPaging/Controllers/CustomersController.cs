@@ -79,7 +79,7 @@ namespace WebApiPaging.Controllers
 
         [HttpGet]
         [Route("customers/headers")]
-        public IHttpActionResult GetViaHeaders([ValueProvider(typeof(XHeaderValueProviderFactory))] int pageNo = 1, [ValueProvider(typeof(XHeaderValueProviderFactory))] int pageSize = 50)
+        public HttpResponseMessage GetViaHeaders([ValueProvider(typeof(XHeaderValueProviderFactory))] int pageNo = 1, [ValueProvider(typeof(XHeaderValueProviderFactory))] int pageSize = 50)
         {
             // Determine the number of records to skip
             int skip = (pageNo - 1) * pageSize;
@@ -99,14 +99,17 @@ namespace WebApiPaging.Controllers
                 ? (int) Math.Ceiling(total/(double) pageSize)
                 : 0;
 
-            // Set headers for paging
-            HttpContext.Current.Response.Headers.Add("X-Paging-PageNo", pageNo.ToString());
-            HttpContext.Current.Response.Headers.Add("X-Paging-PageSize", pageSize.ToString());
-            HttpContext.Current.Response.Headers.Add("X-Paging-PageCount", pageCount.ToString());
-            HttpContext.Current.Response.Headers.Add("X-Paging-TotalRecordCount", total.ToString());
+            // Create the response
+            var response = Request.CreateResponse(HttpStatusCode.OK, customers);
 
-            // Return the list of customers
-            return Ok(customers);
+            // Set headers for paging
+            response.Headers.Add("X-Paging-PageNo", pageNo.ToString());
+            response.Headers.Add("X-Paging-PageSize", pageSize.ToString());
+            response.Headers.Add("X-Paging-PageCount", pageCount.ToString());
+            response.Headers.Add("X-Paging-TotalRecordCount", total.ToString());
+
+            // Return the response
+            return response;
         }
     }
 
