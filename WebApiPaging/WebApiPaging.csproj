@@ -205,6 +205,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Infrastructure\PageLinkBuilder.cs" />
     <Compile Include="Infrastructure\XHeaderValueProvider.cs" />
     <Compile Include="Infrastructure\PagedResult.cs" />
     <Compile Include="Controllers\ValuesController.cs" />

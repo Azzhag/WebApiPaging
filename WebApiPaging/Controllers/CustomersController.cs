@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +23,7 @@ namespace WebApiPaging.Controllers
     public class CustomersController : ApiController
     {
         private readonly ApplicationDbContext _dbContext;
+        private const string LinkHeaderTemplate = "<{0}>; rel=\"{1}\"";
 
         public CustomersController()
         {
@@ -111,6 +114,82 @@ namespace WebApiPaging.Controllers
             // Return the response
             return response;
         }
+
+        [HttpGet]
+        [Route("customers/pagelinks", Name = "GetPageLinks")]
+        public IHttpActionResult GetPageLinks(int pageNo = 1, int pageSize = 50)
+        {
+            // Determine the number of records to skip
+            int skip = (pageNo - 1) * pageSize;
+
+            // Get total number of records
+            int total = _dbContext.Customers.Count();
+
+            // Select the customers based on paging parameters
+            var customers = _dbContext.Customers
+                .OrderBy(c => c.Id)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToList();
+
+            // Get the page links
+            var linkBuilder = new PageLinkBuilder(Url, "GetPageLinks", null, pageNo, pageSize, total);
+
+            // Return the list of customers
+            return Ok(new
+            {
+                Data = customers,
+                Paging = new
+                {
+                    First = linkBuilder.FirstPage,
+                    Previous= linkBuilder.PreviousPage,
+                    Next = linkBuilder.NextPage,
+                    Last = linkBuilder.LastPage
+                }
+            });
+        }
+
+        [HttpGet]
+        [Route("customers/pagelinkheaders", Name = "GetPageLinkHeaders")]
+        public HttpResponseMessage GetPageLinkHeaders(int pageNo = 1, int pageSize = 50)
+        {
+            // Determine the number of records to skip
+            int skip = (pageNo - 1) * pageSize;
+
+            // Get total number of records
+            int total = _dbContext.Customers.Count();
+
+            // Select the customers based on paging parameters
+            var customers = _dbContext.Customers
+                .OrderBy(c => c.Id)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToList();
+
+            // Get the page links
+            var linkBuilder = new PageLinkBuilder(Url, "GetPageLinkHeaders", null, pageNo, pageSize, total);
+
+            // Create the response
+            var response = Request.CreateResponse(HttpStatusCode.OK, customers);
+
+            // Build up the link header
+            List<string> links = new List<string>();
+            if (linkBuilder.FirstPage != null)
+                links.Add(string.Format(LinkHeaderTemplate, linkBuilder.FirstPage, "first"));
+            if (linkBuilder.PreviousPage != null)
+                links.Add(string.Format(LinkHeaderTemplate, linkBuilder.PreviousPage, "previous"));
+            if (linkBuilder.NextPage != null)
+                links.Add(string.Format(LinkHeaderTemplate, linkBuilder.NextPage, "next"));
+            if (linkBuilder.LastPage != null)
+                links.Add(string.Format(LinkHeaderTemplate, linkBuilder.LastPage, "last"));
+
+            // Set the page link header
+            response.Headers.Add("Link", string.Join(", ", links));
+
+            // Return the response
+            return response;
+        }
+
     }
 
 }
