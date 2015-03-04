@@ -30,6 +30,27 @@ namespace WebApiPaging.Migrations
                 context.Customers.AddOrUpdate(c => c.Id,
                     customers);
             }
+
+            // If no tweets exist, add them
+            if (!context.Tweets.Any())
+            {
+                var createdDate = DateTime.Now.AddDays(-2);
+
+                var tweets = Builder<Tweet>.CreateListOfSize(1000)
+                    .All()
+                    .With(tweet =>
+                    {
+                        createdDate = createdDate.AddSeconds(1);
+                        tweet.CreatedDate = createdDate;
+
+                        return tweet;
+                    })
+                    .With(tweet => tweet.Text = Faker.Lorem.Sentence())
+                    .Build()
+                    .ToArray();
+
+                context.Tweets.AddOrUpdate(t => t.Id, tweets);
+            }
         }
     }
 }

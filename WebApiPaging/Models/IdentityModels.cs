@@ -23,6 +23,8 @@ namespace WebApiPaging.Models
     {
         public IDbSet<Customer> Customers { get; set; }
 
+        public IDbSet<Tweet> Tweets { get; set; }
+
         public ApplicationDbContext()
             : base("DefaultConnection", throwIfV1Schema: false)
         {
